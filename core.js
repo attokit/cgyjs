@@ -379,17 +379,21 @@ cgy.def(Date.prototype, {
             d = new Date(y,m+1,0).getDate();
         return [new Date(y,m,1), new Date(y,m,d)];
     },
-    //获取本周 周日，周六 日期，数组
-    weekFirstLastDate() {
+    //获取本周 周日，周六 日期，数组 [周日00:00:00, 周六23:59:59]
+    //startWith==0 表示每周从周日开始，==1 表示每周从周一开始，默认从周日开始
+    weekFirstLastDate(startWith=0) {
         let ds = this.format()+' 00:00:00';
         let day = this.getDay(),
             ts = new Date(ds).getTime(),
             td = 24*60*60*1000;
-        //day = day<=0 ? 7 : day;
+        if (startWith>0) {
+            //每周从周一开始
+            day = day<=0 ? 7 : day-1;
+        }
         let tof = day*td,
             toe = (6-day)*td,
             tf = ts-tof,
-            te = ts+toe;
+            te = ts+toe+(td-1000);
         return [new Date(tf), new Date(te)];
     },
     //获取今年是否闰年，
@@ -425,27 +429,40 @@ cgy.def(Date.prototype, {
             ];
         return ds.map(i=>cgy.date.new(i).unixTimestamp());
     },
-    //判断 timestamp 是否在 timestart 和 timeend 之间，timestart 00:00:00 ~ timeend 23:59:59 之间，包含起止时间
+    //判断 unixTimestamp 是否在 timestart 和 timeend 之间，timestart 00:00:00 ~ timeend 23:59:59 之间，包含起止时间
     between(timestart, timeend) {
         let ct = this.unixTimestamp(),
             cd = cgy.date,
-            legal = n => cd.isTimestamp(n) && cd.isUnixTimestamp(n),
+            legal = n => /*cd.isTimestamp(n) && */cd.isUnixTimestamp(n),
             isdstr = cd.isDateString,
+            isdate = d => cgy.is.instance(d, Date),
             timetostr = cd.timestampToDateString,
             strtotime = cd.dateStringToTimestamp;
         if (isdstr(timestart) && isdstr(timeend)) {
             //起止时间参数是 日期字符串
             timestart = strtotime(timestart);
             timeend = strtotime(timeend);
+        } else if (isdate(timestart) && isdate(timeend)) {
+            timestart = timestart.unixTimestamp();
+            timeend = timeend.unixTimestamp();
         }
+
         if (legal(timestart) && legal(timeend)) {
             //起止时间参数是 unixTimestamp 数字
-            let ts = strtotime(timetostr(timestart, 'YYYY-MM-DD')+' 00:00:00'),
-                te = strtotime(timetostr(timeend, 'YYYY-MM-DD')+' 23:59:59');
+            let ts = strtotime(timetostr(timestart, 'YYYY-MM-dd')+' 00:00:00'),
+                te = strtotime(timetostr(timeend, 'YYYY-MM-dd')+' 23:59:59');
             return ct>=ts && ct<=te;
         }
         return false;
-    }
+    },
+    //增加/减少 秒数
+    mod(seconds) {
+        if (!cgy.is.realNumber(seconds)) return this;
+        let ct = this.unixTimestamp();
+        ct += seconds;
+        return cgy.date.new(ct);
+    },
+
 });
 
 //cgy base properties
@@ -1665,10 +1682,8 @@ cgy.def({
         new(...args) {
             if (args.length>0) {
                 let arg = args[0];
-                if (cgy.date.isTimestamp(arg)) {
-                    if (cgy.date.isUnixTimestamp(arg)) return new Date(arg*1000);
-                    return new Date(arg);
-                }
+                if (cgy.date.isTimestamp(arg)) return new Date(arg);
+                if (cgy.date.isUnixTimestamp(arg)) return new Date(arg*1000);
                 if (cgy.date.isDateString(arg)) return new Date(arg);
                 return new Date(...args);
             }
@@ -1681,7 +1696,8 @@ cgy.def({
                 ts = d.getTime(),
                 tss = ts+'',
                 ns = (n*1)+'';
-            return tss.length >= ns.length;
+            //return tss.length >= ns.length && !cgy.date.isUnitTimestamp(n);
+            return tss.length == ns.length;
         },
         //判断数字是否 unixTimestamp
         isUnixTimestamp(n) {
@@ -1690,12 +1706,14 @@ cgy.def({
                 ts = d.unixTimestamp(),
                 tss = ts+'',
                 ns = (n*1)+'';
-            return tss.length >= ns.length;
+            //return tss.length >= ns.length;
+            return tss.length == ns.length;
         },
         //判断是否合法时间字符串 2024-01-01
         isDateString(str) {
-            let d = new Date(str);
-            return d.toString()!='Invalid Date';
+            //let d = new Date(str);
+            //return d.toString()!='Invalid Date';
+            return cgy.is.datetimeString(str);
         },
         //时间戳转为字符
         timestampToDateString(unixTimestamp, format="YYYY-MM-dd") {
@@ -1704,12 +1722,14 @@ cgy.def({
             let d = new Date(unixTimestamp * 1000);
             return d.format(format);
         },
+        timetostr(...args) {return cgy.date.timestampTodateString(...args);},
         //时间字符串转为时间戳
         dateStringToTimestamp(dateString) {
             if (!cgy.date.isDateString(dateString)) return 0;
             let d = new Date(dateString);
             return d.unixTimestamp();
         },
+        strtotime(str) {return cgy.date.dateStringToTimestamp(str);},
     },
 });
 
