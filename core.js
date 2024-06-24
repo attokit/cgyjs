@@ -450,7 +450,7 @@ cgy.def(Date.prototype, {
 
 //cgy base properties
 cgy.def({
-    version: '2.2.0',
+    version: '2.2.1',
     //引用的扩展包 集合
     modules: {},
 });
