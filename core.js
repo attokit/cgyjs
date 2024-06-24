@@ -1665,11 +1665,11 @@ cgy.def({
         new(...args) {
             if (args.length>0) {
                 let arg = args[0];
-                if (cgy.isTimestamp(arg)) {
-                    if (cgy.isUnixTimestamp(arg)) return new Date(arg*1000);
+                if (cgy.date.isTimestamp(arg)) {
+                    if (cgy.date.isUnixTimestamp(arg)) return new Date(arg*1000);
                     return new Date(arg);
                 }
-                if (cgy.isDateString(arg)) return new Date(arg);
+                if (cgy.date.isDateString(arg)) return new Date(arg);
                 return new Date(...args);
             }
             return new Date();
