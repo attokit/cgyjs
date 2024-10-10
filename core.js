@@ -47,7 +47,7 @@ Reflect.defineProperty(cgy, 'is', {
                 let types = type.split(',');
                 return types.includes(mytype);
             }
-            return (type === 'null' && anything === null) || (type === 'number' &&  anything!='' && isFinite(anything)) || mytype === type;
+            return (type === 'null' && anything === null) || (type === 'number' && !isNaN(parseInt(anything))/*anything!==null && anything!='' && isFinite(anything)*/) || mytype === type;
         },{
             get(target, prop, receiver) {
                 let props = {
@@ -89,7 +89,7 @@ Reflect.defineProperty(cgy, 'is', {
                     },
                     nonEmptyObject: anything => cgy.is.plainObject(anything) && !cgy.is.empty(anything),
                     eachable: anything => cgy.is.eachTypes.includes(cgy.is(anything)),
-                    realNumber: anything => isFinite(anything),
+                    realNumber: anything => !isNaN(parseInt(anything)),     //anything!=null && anything!='' && isFinite(anything),
                     integer: anything => isFinite(anything) && (parseInt(anything)==anything*1),
                     float: anything => isFinite(anything) && (parseInt(anything)!=anything*1),
                     json: anything => {

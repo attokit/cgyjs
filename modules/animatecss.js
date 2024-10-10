@@ -16,7 +16,7 @@ animatecss.module = {
 animatecss.init = cgy => {
 
     //引入 animate.css，需要 cgy.use(csstools)
-    cgy.appendStyleLink('cgy_animate_css', '//lib.cgy.design/animate/@');
+    cgy.appendStyleLink('cgy_animate_css', '//io.cgy.design/animate/@');
 
     //定义一些工具方法，aniFoobar
     cgy.def({
