@@ -61,7 +61,7 @@ request.init = cgy => { cgy.def( {
             },
 
             //解析取得 api 地址
-            api(api) {
+            api(api='') {
                 let apia = [],
                     query = 'format=json';
                 if (api.includes('?')) {
@@ -69,20 +69,23 @@ request.init = cgy => { cgy.def( {
                     api = apia[0];
                     query = `${apia[1]}&${query}`;
                 }
-                api = api.trimAny('/');
                 let pre = '';
-                if (api.includes('/')) {
-                    apia = api.split('/');
+                if (api=='') {
+                    pre = cgy.requestApi.default;
+                } else {
+                    api = api.trimAny('/');
+                    let apia = api.split('/');
                     pre = cgy.requestApi[apia[0]];
                     if (cgy.is.undefined(pre)) {
                         pre = cgy.requestApi.default;
                     } else {
                         api = apia.slice(1).join('/');
                     }
-                } else {
-                    pre = cgy.requestApi.default;
                 }
-                return `${pre}/${api}?${query}`;
+                pre = pre.trimAnyEnd('/');
+                api = api=='' ? '' : `/${api}`;
+                //console.log(pre, api, query);
+                return `${pre}${api}?${query}`;
             },
 
             //JWT token 验证
