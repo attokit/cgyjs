@@ -1421,6 +1421,8 @@ cgy.def({
     //lodash.get() 方法实现
     //以 a.b.c[0].d 方式读取 object 的值，来自 lodash
     loget (source, path, defaultValue = undefined) {
+        //path 可为空
+        if (path=='') return source;
         //间隔字符可以是 . or /
         path = path.replace(/\//g, '.');
         // a[3].b -> a.3.b
